@@ -340,6 +340,7 @@ public class ApexDoc {
             return cModelParent;
         } catch (Exception e) { // Catch exception if any
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return null;
@@ -397,6 +398,7 @@ public class ApexDoc {
     private static void fillMethodModel(MethodModel mModel, String name, ArrayList<String> lstComments, int iLine) {
         mModel.setNameLine(name, iLine);
         boolean inDescription = false;
+        boolean inParam = false;
         int i = 0;
         for (String comment : lstComments) {
         	i++;
@@ -406,6 +408,7 @@ public class ApexDoc {
             if (idxStart != -1) {
                 mModel.setAuthor(comment.substring(idxStart + 8).trim());
                 inDescription = false;
+                inParam = false;
                 continue;
             }
 
@@ -413,6 +416,7 @@ public class ApexDoc {
             if (idxStart != -1) {
                 mModel.setDate(comment.substring(idxStart + 5).trim());
                 inDescription = false;
+                inParam = false;
                 continue;
             }
 
@@ -420,6 +424,7 @@ public class ApexDoc {
             if (idxStart != -1) {
                 mModel.setReturns(comment.substring(idxStart + 7).trim());
                 inDescription = false;
+                inParam = false;
                 continue;
             }
 
@@ -427,6 +432,7 @@ public class ApexDoc {
             if (idxStart != -1) {
                 mModel.getParams().add(comment.substring(idxStart + 6).trim());
                 inDescription = false;
+                inParam = true;
                 continue;
             }
             
@@ -442,6 +448,7 @@ public class ApexDoc {
                 	}
                 }
                 inDescription = true;
+                inParam = false;
                 continue;
             }
 
@@ -457,6 +464,21 @@ public class ApexDoc {
                     mModel.setDescription(mModel.getDescription() + ' ' + comment.substring(j));
                 }
                 continue;
+            }
+
+            if (inParam) {
+                int j; 
+                for (j = 0; j < comment.length(); j++) {
+                    char ch = comment.charAt(j);
+                    if (ch != '*' && ch != ' ')
+                        break;
+                }
+                if (j < comment.length()) {
+                    ArrayList<String> paramList = mModel.getParams();
+                    String paramStr = paramList.get(paramList.size()-1);
+                    paramStr = paramStr.concat( ' ' + comment.substring(j));
+                    paramList.set(paramList.size()-1, paramStr);
+                }
             }
         }
     }
